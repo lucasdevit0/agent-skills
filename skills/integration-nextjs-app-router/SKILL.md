@@ -1,16 +1,58 @@
 ---
 name: integration-nextjs-app-router
-description: Add or review PostHog analytics in a Next.js App Router project. Use for browser or server events, identity, and verification of an instrumented user journey.
+description: PostHog integration for Next.js App Router applications
+metadata:
+  author: PostHog
+  version: 1.8.1
 ---
 
-# Integrate PostHog with Next.js App Router
+# PostHog integration for Next.js App Router
 
-Inspect the installed Next.js version, package manager, App Router layout, existing analytics wrapper, authentication lifecycle, configuration and consent flow. Start from the product question. Choose a small set of events that can answer it and define when each event counts as having happened.
+This skill helps you add PostHog analytics to Next.js App Router applications.
 
-1. **Plan capture.** List event names, their source, allowed properties and the boundary that confirms success. Reuse existing event names and conventions. When a client initiates work that may fail on the server, decide explicitly whether the event measures intent or completion.
-2. **Wire the SDK.** Use the initialization mechanism supported by the project's framework and SDK versions. Initialize once, using the project's environment configuration and regional ingestion host. Keep server credentials on the server. Prefer an existing wrapper when it already handles consent and initialization. Consult the current [PostHog Next.js guide](https://posthog.com/docs/libraries/next-js).
-3. **Follow identity.** For an authenticated journey, use a stable application user ID, associate events after sign-in and clear the browser identity on sign-out. Use consistent identity across authorized browser and server events. When correlating sessions, limit propagation to the intended backend. Treat analytics identifiers as telemetry only.
-4. **Capture at the source.** Wire an interaction to its handler and a business outcome to its successful transition. Avoid duplicate capture across rerenders, retries or client and server. Keep raw form text, secrets and unrelated personal data out of properties. Where error tracking is requested, capture the useful failure once at a boundary that has context.
-5. **Verify a journey.** Use an approved test destination or a capture stub. Exercise success, failure, sign-out and the applicable consent states. Inspect event order, property values and identity. Distinguish local payload verification from confirmed ingestion.
+## Workflow
 
-Finish with an event inventory, configuration names, checks performed and any remaining dashboard or deployment steps. For SDK-specific details and current examples, refer to PostHog's maintained documentation.
+Follow these steps in order to complete the integration:
+
+1. [basic-integration-1.0-begin.md](references/basic-integration-1.0-begin.md) - PostHog Setup - Begin ← **Start here**
+2. [basic-integration-1.1-edit.md](references/basic-integration-1.1-edit.md) - PostHog Setup - Edit
+3. [basic-integration-1.2-revise.md](references/basic-integration-1.2-revise.md) - PostHog Setup - Revise
+4. [basic-integration-1.3-conclude.md](references/basic-integration-1.3-conclude.md) - PostHog Setup - Conclusion
+
+## Reference files
+
+- [EXAMPLE.md](references/EXAMPLE.md) - Next.js App Router example project code
+- [next-js.md](references/next-js.md) - Next.js - docs
+- [identify-users.md](references/identify-users.md) - Identify users - docs
+- [basic-integration-1.0-begin.md](references/basic-integration-1.0-begin.md) - PostHog setup - begin
+- [basic-integration-1.1-edit.md](references/basic-integration-1.1-edit.md) - PostHog setup - edit
+- [basic-integration-1.2-revise.md](references/basic-integration-1.2-revise.md) - PostHog setup - revise
+- [basic-integration-1.3-conclude.md](references/basic-integration-1.3-conclude.md) - PostHog setup - conclusion
+
+The example project shows the target implementation pattern. Consult the documentation for API details.
+
+## Key principles
+
+- **Environment variables**: Always use environment variables for PostHog keys. Never hardcode them.
+- **Minimal changes**: Add PostHog code alongside existing integrations. Don't replace or restructure existing code.
+- **Match the example**: Your implementation should follow the example project's patterns as closely as possible.
+
+## Framework guidelines
+
+- For Next.js 15.3+, initialize PostHog in instrumentation-client.ts for the simplest setup
+- For feature flags, use useFeatureFlagEnabled() or useFeatureFlagPayload() hooks - they handle loading states and external sync automatically
+- Add analytics capture in event handlers where user actions occur, NOT in useEffect reacting to state changes
+- Do NOT use useEffect for data transformation - calculate derived values during render instead
+- Do NOT use useEffect to respond to user events - put that logic in the event handler itself
+- Do NOT use useEffect to chain state updates - calculate all related updates together in the event handler
+- Do NOT use useEffect to notify parent components - call the parent callback alongside setState in the event handler
+- To reset component state when a prop changes, pass the prop as the component's key instead of using useEffect
+- useEffect is ONLY for synchronizing with external systems (non-React widgets, browser APIs, network subscriptions)
+
+## Identifying users
+
+Identify users during login and signup events. Refer to the example code and documentation for the correct identify pattern for this framework. If both frontend and backend code exist, pass the client-side session and distinct ID using `X-POSTHOG-DISTINCT-ID` and `X-POSTHOG-SESSION-ID` headers to maintain correlation.
+
+## Error tracking
+
+Add PostHog error tracking to relevant files, particularly around critical user flows and API boundaries.
